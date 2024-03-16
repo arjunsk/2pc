@@ -1,4 +1,4 @@
-package pkg
+package common
 
 type Operation int
 
@@ -74,4 +74,13 @@ func ParseTxState(s string) TxState {
 		return Aborted
 	}
 	return NoState
+}
+
+//----------------------------------------------------------------------
+
+type Tx struct {
+	Id    string
+	Key   string
+	Op    Operation
+	State TxState
 }

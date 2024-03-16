@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"twopc/pkg"
+	"twopc/pkg/master"
+	"twopc/pkg/replica"
 )
 
 func main() {
@@ -20,10 +21,10 @@ func main() {
 	switch {
 	case *isMaster:
 		log.SetPrefix("M  ")
-		pkg.RunMaster(*replicaCount)
+		master.RunMaster(*replicaCount)
 	case *isReplica:
 		log.SetPrefix(fmt.Sprint("R", strconv.Itoa(*replicaNumber), " "))
-		pkg.RunReplica(*replicaNumber)
+		replica.RunReplica(*replicaNumber)
 	default:
 		flag.Usage()
 	}

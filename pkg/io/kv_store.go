@@ -6,12 +6,19 @@ import (
 	"path"
 )
 
+type IKeyValueStore interface {
+	Put(key string, value string) (err error)
+	Del(key string) (err error)
+	Get(key string) (value string, err error)
+	List() (keys []string, err error)
+}
+
 type KeyValueStore struct {
 	basePath string
 }
 
 func NewKeyValueStore(dbPath string) (store *KeyValueStore) {
-	err := os.MkdirAll(dbPath, 0)
+	err := os.MkdirAll(dbPath, 0777)
 	if err != nil {
 		log.Fatalln("newKeyValueStore:", err)
 	}

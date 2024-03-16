@@ -5,8 +5,15 @@ import (
 	"log"
 	"os"
 	"path"
-	"twopc/pkg"
+	"twopc/pkg/common"
 )
+
+type ILogger interface {
+	WriteSpecial(directive string)
+	WriteState(txId string, state common.TxState)
+	WriteOp(txId string, state common.TxState, op common.Operation, key string)
+	Read() (entries []logEntry, err error)
+}
 
 type Logger struct {
 	path      string
@@ -17,7 +24,8 @@ type Logger struct {
 
 func NewLogger(logFilePath string) *Logger {
 	err := os.MkdirAll(path.Dir(logFilePath), 0)
-	file, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE, 0)
+	//file, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE, 0)
+	file, err := os.OpenFile(logFilePath, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
 	if err != nil {
 		log.Fatalln("newLogger:", err)
 	}
@@ -32,13 +40,6 @@ func NewLogger(logFilePath string) *Logger {
 	go l.loggingLoop()
 
 	return l
-}
-
-func (l *Logger) writeOp(txId string, state pkg.TxState, op pkg.Operation, key string) {
-	record := []string{txId, state.String(), op.String(), key}
-	done := make(chan int)
-	l.requests <- &logRequest{record, done}
-	<-done
 }
 
 func (l *Logger) loggingLoop() {
@@ -76,8 +77,8 @@ func (l *Logger) Read() (entries []logEntry, err error) {
 	for _, record := range records {
 		entries = append(entries, logEntry{
 			TxId:  record[0],
-			State: pkg.ParseTxState(record[1]),
-			Op:    pkg.ParseOperation(record[2]),
+			State: common.ParseTxState(record[1]),
+			Op:    common.ParseOperation(record[2]),
 			Key:   record[3],
 		})
 	}
@@ -85,11 +86,18 @@ func (l *Logger) Read() (entries []logEntry, err error) {
 }
 
 func (l *Logger) WriteSpecial(directive string) {
-	l.writeOp(directive, pkg.NoState, pkg.NoOp, "")
+	l.WriteOp(directive, common.NoState, common.NoOp, "")
 }
 
-func (l *Logger) WriteState(txId string, state pkg.TxState) {
-	l.writeOp(txId, state, pkg.NoOp, "")
+func (l *Logger) WriteState(txId string, state common.TxState) {
+	l.WriteOp(txId, state, common.NoOp, "")
+}
+
+func (l *Logger) WriteOp(txId string, state common.TxState, op common.Operation, key string) {
+	record := []string{txId, state.String(), op.String(), key}
+	done := make(chan int)
+	l.requests <- &logRequest{record, done}
+	<-done
 }
 
 // -------------------------------------------------------------------------
@@ -100,7 +108,7 @@ type logRequest struct {
 
 type logEntry struct {
 	TxId  string
-	State pkg.TxState
-	Op    pkg.Operation
+	State common.TxState
+	Op    common.Operation
 	Key   string
 }
