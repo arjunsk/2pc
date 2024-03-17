@@ -80,6 +80,7 @@ func (m *Master) SendAbort(action string, txId string) {
 
 func (m *Master) SendAndWaitForCommit(action string, txId string, replicaDeaths []common.ReplicaDeath) {
 	m.forEachReplica(func(i int, r *client.ReplicaClient) {
+		count := 0
 		for {
 			_, err := r.Commit(txId, getReplicaDeath(replicaDeaths, i))
 			if err == nil {
@@ -87,6 +88,11 @@ func (m *Master) SendAndWaitForCommit(action string, txId string, replicaDeaths 
 			}
 			log.Println("Master."+action+" r.Commit:", err)
 			time.Sleep(100 * time.Millisecond)
+
+			count++
+			if count > 10 {
+				break
+			}
 		}
 	})
 }

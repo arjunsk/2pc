@@ -43,6 +43,7 @@ func NewReplica(num int) *Replica {
 
 func (r *Replica) Get(args *client.ReplicaKeyArgs, reply *client.ReplicaGetResult) (err error) {
 	val, err := r.committedStore.Get(args.Key)
+	log.Printf("Replica.Get: key=%v, value=%v, err=%v\n", args.Key, val, err)
 	if err != nil {
 		return
 	}
@@ -52,14 +53,17 @@ func (r *Replica) Get(args *client.ReplicaKeyArgs, reply *client.ReplicaGetResul
 
 func (r *Replica) TryPut(args *client.TxPutArgs, reply *client.ReplicaActionResult) (err error) {
 	writeToTempStore := func() error { return r.tempStore.Put(r.getTempStoreKey(args.TxId, args.Key), args.Value) }
+	log.Printf("Replica.TryPut: key=%v, value=%v, txId=%v, die=%v\n", args.Key, args.Value, args.TxId, args.Die)
 	return r.tryMutate(args.Key, args.TxId, args.Die, common.PutOp, writeToTempStore, reply)
 }
 
 func (r *Replica) TryDel(args *client.TxDelArgs, reply *client.ReplicaActionResult) (err error) {
+	log.Printf("Replica.TryDel: key=%v, txId=%v, die=%v\n", args.Key, args.TxId, args.Die)
 	return r.tryMutate(args.Key, args.TxId, args.Die, common.DelOp, nil, reply)
 }
 
 func (r *Replica) Ping(args *client.ReplicaKeyArgs, reply *client.ReplicaGetResult) (err error) {
+	log.Printf("Replica.Ping: key=%v\n", args.Key)
 	reply.Value = args.Key
 	return nil
 }

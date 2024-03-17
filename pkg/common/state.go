@@ -17,6 +17,8 @@ func (s Operation) String() string {
 		return "DEL"
 	case RecoveryOp:
 		return "RECOVERY"
+	case NoOp:
+		return "NOOP"
 	default:
 		panic("unhandled default case")
 	}
