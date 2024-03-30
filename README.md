@@ -17,3 +17,4 @@ Part of [Distributed Algorithms](https://en.wikipedia.org/wiki/Distributed_algor
 3. When the old participant comes back online, the coordinator asks to recycle.
 4. For coordinator failure: 3PC, Paxos Commit.
 5. Distributed Dead Lock Detection: Periodically each of the Participants sends its wait-for graph to a designated deadlock master node. The create a union and create global wait-for graph to detect global deadlock.
+6. Also read about 2PL: Growing Phase, Shrinking Phase.[link](https://www.tutorialspoint.com/types-of-two-phase-locking-strict-rigorous-and-conservative-in-dbms)
