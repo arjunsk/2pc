@@ -92,6 +92,7 @@ func (c *ReplicaClient) TryDel(key string, txid string, die common.ReplicaDeath)
 	return
 }
 
+// Commit This is called via RPC by the Master to ask the Replica to commit a transaction.
 func (c *ReplicaClient) Commit(txid string, die common.ReplicaDeath) (Success *bool, err error) {
 	if err = c.tryConnect(); err != nil {
 		return

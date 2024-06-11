@@ -17,6 +17,7 @@ type IReplica2PC interface {
 	Recover() (err error)
 }
 
+// Commit This is called via RPC by the Master to ask the Replica to commit a transaction.
 func (r *Replica) Commit(args *client.CommitArgs, reply *client.ReplicaActionResult) (err error) {
 	r.dieIf(args.Die, common.ReplicaDieBeforeProcessingCommit)
 
@@ -135,7 +136,6 @@ func (r *Replica) abortTx(txId string, op common.Operation, key string) {
 }
 
 func (r *Replica) commitTx(txId string, op common.Operation, key string, die common.ReplicaDeath) (err error) {
-	delete(r.lockedKeys, key)
 
 	switch op {
 	case common.PutOp:
@@ -167,8 +167,11 @@ func (r *Replica) commitTx(txId string, op common.Operation, key string, die com
 			fmt.Println("Unable to del committed val for tx:", txId, "key:", key)
 		}
 	}
-
 	r.dieIf(die, common.ReplicaDieAfterLoggingCommitted)
+
+	// release the lock on the key only after committing
+	delete(r.lockedKeys, key)
+
 	return nil
 }
 
